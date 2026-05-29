@@ -11,10 +11,10 @@ const (
 )
 
 type TileProps struct {
-	BlocksBunny bool
-	BlocksFox   bool
+	BlocksBunny  bool
+	BlocksFox    bool
 	BlocksVision bool
-	Emoji       string
+	Emoji        string
 }
 
 var tileProps = [...]TileProps{

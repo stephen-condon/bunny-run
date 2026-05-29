@@ -6,8 +6,8 @@ import "time"
 
 type fakeClock struct{ t time.Time }
 
-func newFakeClock(t time.Time) *fakeClock  { return &fakeClock{t} }
-func (f *fakeClock) Now() time.Time        { return f.t }
+func newFakeClock(t time.Time) *fakeClock    { return &fakeClock{t} }
+func (f *fakeClock) Now() time.Time          { return f.t }
 func (f *fakeClock) advance(d time.Duration) { f.t = f.t.Add(d) }
 
 // --- FakeInput ---
@@ -18,7 +18,7 @@ type fakeInput struct {
 	backspace                     bool
 }
 
-func (f *fakeInput) IsUpPressed() bool           { return f.up }
+func (f *fakeInput) IsUpPressed() bool            { return f.up }
 func (f *fakeInput) IsDownPressed() bool          { return f.down }
 func (f *fakeInput) IsLeftPressed() bool          { return f.left }
 func (f *fakeInput) IsRightPressed() bool         { return f.right }

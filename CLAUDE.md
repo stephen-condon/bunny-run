@@ -5,6 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
+# Install pre-commit hooks (run once after clone)
+make setup
+
 # Run the game
 go run .
 

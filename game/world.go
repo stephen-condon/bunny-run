@@ -9,10 +9,10 @@ const (
 
 // World holds the tile grid and handles procedural column generation.
 type World struct {
-	tiles       map[int][]TileType // column index → column of tiles (length WorldHeight)
-	generated   int                // rightmost column index generated so far
-	density     float64
-	rng         *rand.Rand
+	tiles     map[int][]TileType // column index → column of tiles (length WorldHeight)
+	generated int                // rightmost column index generated so far
+	density   float64
+	rng       *rand.Rand
 }
 
 // NewWorld creates an empty world seeded with the given rng source.

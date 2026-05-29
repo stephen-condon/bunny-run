@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	foxSpeed          = 3.0  // tiles per second
-	visionConeDepth   = 5    // tiles
-	visionConeHalfAng = 1    // cone half-width at each distance step (Manhattan spread)
-	peripheralRadius  = 1    // tiles (Chebyshev)
-	alertRadius       = 6    // tiles (Chebyshev) for alerting nearby foxes
+	foxSpeed          = 3.0 // tiles per second
+	visionConeDepth   = 5   // tiles
+	visionConeHalfAng = 1   // cone half-width at each distance step (Manhattan spread)
+	peripheralRadius  = 1   // tiles (Chebyshev)
+	alertRadius       = 6   // tiles (Chebyshev) for alerting nearby foxes
 	bushWanderMinSec  = 3.0
 	bushWanderMaxSec  = 5.0
-	lostInterestDist  = 1    // tiles — fox "arrives" at last known pos within this dist
+	lostInterestDist  = 1 // tiles — fox "arrives" at last known pos within this dist
 )
 
 // FoxState represents what the fox is currently doing.
@@ -64,12 +64,12 @@ type Fox struct {
 // NewFox creates a fox at pos with the given patrol path.
 func NewFox(pos Vec2, patrol PatrolPath, seed int64) *Fox {
 	f := &Fox{
-		Pos:         pos,
-		Facing:      DirRight,
-		State:       FoxStatePatrol,
-		patrol:      patrol,
+		Pos:          pos,
+		Facing:       DirRight,
+		State:        FoxStatePatrol,
+		patrol:       patrol,
 		patrolTarget: patrol.B,
-		rng:         rand.New(rand.NewSource(seed)),
+		rng:          rand.New(rand.NewSource(seed)),
 	}
 	return f
 }
