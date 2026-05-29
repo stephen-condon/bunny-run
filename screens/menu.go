@@ -11,7 +11,7 @@ import (
 type MenuChoice int
 
 const (
-	MenuNone        MenuChoice = iota
+	MenuNone MenuChoice = iota
 	MenuPlay
 	MenuLeaderboard
 )

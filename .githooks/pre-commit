@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+echo "Running pre-commit checks..."
+
+# fmt: fail if any .go file needs formatting
+echo "→ fmt..."
+UNFORMATTED=$(gofmt -l .)
+if [ -n "$UNFORMATTED" ]; then
+  echo "Files need formatting (run: gofmt -w .):"
+  echo "$UNFORMATTED"
+  exit 1
+fi
+
+# vet: static analysis / lint
+echo "→ vet..."
+go vet ./...
+
+# test: compiles all packages and runs tests (subsumes go build)
+echo "→ test..."
+go test ./...
+
+echo "✓ All checks passed."
