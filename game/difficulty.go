@@ -12,7 +12,7 @@ const (
 	maxObstacleDensity       = 0.40
 	obstacleDensityIncrement = 0.05
 
-	baseFoxInterval      = 20 * time.Second // one fox every N seconds
+	baseFoxInterval      = 10 * time.Second // one fox every N seconds
 	minFoxInterval       = 5 * time.Second
 	foxIntervalDecrement = 2 * time.Second
 )
