@@ -137,6 +137,7 @@ func (g *Game) startGame() {
 	g.startTime = g.clock.Now()
 	g.foxTimer = 0
 	g.state = statePlaying
+	g.spawnFoxAt(g.camera.RightTile(ScreenWidth) - 5)
 }
 
 // --- Playing ---
@@ -190,13 +191,28 @@ func (g *Game) updatePlaying() {
 }
 
 func (g *Game) spawnFox() {
-	spawnCol := g.camera.RightTile(ScreenWidth) + 1
-	spawnRow := rand.Intn(WorldHeight)
-	pos := Vec2{spawnCol, spawnRow}
-	patrolA := Vec2{spawnCol - 5, spawnRow}
-	if patrolA.X < g.camera.LeftTile() {
-		patrolA.X = g.camera.LeftTile()
+	g.spawnFoxAt(g.camera.RightTile(ScreenWidth) + 1)
+}
+
+func (g *Game) spawnFoxAt(spawnCol int) {
+	patrolAX := spawnCol - 5
+	if patrolAX < g.camera.LeftTile() {
+		patrolAX = g.camera.LeftTile()
 	}
+
+	spawnRow := -1
+	for _, r := range rand.Perm(WorldHeight) {
+		if CanFoxEnter(spawnCol, r, g.world) && CanFoxEnter(patrolAX, r, g.world) {
+			spawnRow = r
+			break
+		}
+	}
+	if spawnRow == -1 {
+		return
+	}
+
+	pos := Vec2{spawnCol, spawnRow}
+	patrolA := Vec2{patrolAX, spawnRow}
 	fox := NewFox(pos, PatrolPath{A: patrolA, B: pos}, time.Now().UnixNano())
 	g.foxes = append(g.foxes, fox)
 

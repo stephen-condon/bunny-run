@@ -214,6 +214,33 @@ func TestSpawnFoxAddsToSlice(t *testing.T) {
 	}
 }
 
+func TestStartGameSpawnsOneFox(t *testing.T) {
+	g := newTestGame()
+	g.startGame()
+	if len(g.foxes) != 1 {
+		t.Errorf("startGame should spawn one initial fox, got %d", len(g.foxes))
+	}
+}
+
+func TestSpawnFoxSkipsBlockedRows(t *testing.T) {
+	g := newTestGame()
+	g.startGame()
+
+	spawnCol := g.camera.RightTile(ScreenWidth) + 1
+	g.world.EnsureGenerated(spawnCol + 1)
+	allTrees := make([]TileType, WorldHeight)
+	for i := range allTrees {
+		allTrees[i] = TileTree
+	}
+	g.world.tiles[spawnCol] = allTrees
+
+	before := len(g.foxes)
+	g.spawnFox()
+	if len(g.foxes) != before {
+		t.Errorf("spawnFox should not add a fox when all rows at spawn column are blocked")
+	}
+}
+
 func TestOpenLeaderboardLoadsEntries(t *testing.T) {
 	store := &fakeScoreStore{
 		entries: []ScoreEntry{{Name: "ACE", Seconds: 50}},

@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Prior to implementing anything beyond a simple bugfix or config change, always use plan mode. When planning, use Opus, when implementing, use Sonnet. When researching specific facts, use a Haiku subagent. Any time there is an opportunity to do something in parallel, spawn subagents to accomplish it.
+
 ## Commands
 
 ```bash
@@ -55,3 +57,19 @@ go test ./game/... -v
 **Scores** are persisted to `~/.bunny-run/scores.json` as a JSON array sorted descending by seconds. Top-10 only; `InsertScore` handles trim. `IsTopScore` is the gate before prompting for a name.
 
 **Screen resolution:** 1280×720, tile size 32 px → 40×22 tile grid. `Camera.X` is the only scroll state; `IsCaughtByLeftEdge` implements the left-edge death condition.
+
+## Workflow
+    1. Pull main from remote & checkout
+    2. create a new branch for changes (use conventional commits naming, e.g. "feat/add-bunnies" or "chore/fix-ci" or "docs/update-claude-md")
+    3. plan changes first, ask user questions to resolve any ambiguity, both ahead of time & as changes are implemented
+    4. use atomic commits, leveraging conventional commits to write the commit message
+    5. push your branch to the remote
+    6. raise a PR, with automerge enabled
+    7. poll PR every 120 seconds for 600s, failed checks should be surfaced, check also if the PR is out of sync with main, if so, remediate. If merge conflicts are detected, ask user to resolve
+
+### Release Tagging
+When ready to ship a release use:
+`git tag v1.0.0`
+`git push origin v1.0.0`
+
+Ensure you follow semantic versioning based on the conventional commits scheme
