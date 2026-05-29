@@ -24,13 +24,13 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libc6-dev libgles2-mesa-dev libgl1-mesa-dev xorg-dev
+          sudo apt-get install -y libc6-dev libgles2-mesa-dev libgl1-mesa-dev xorg-dev xvfb
 
       - name: Vet
         run: go vet ./...
 
       - name: Test
-        run: go test ./...
+        run: xvfb-run go test ./...
 
       - name: Build
         run: go build ./...
