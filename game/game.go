@@ -169,7 +169,7 @@ func (g *Game) updatePlaying() {
 				others = append(others, o)
 			}
 		}
-		f.Update(g.world, g.bunny, others, dt)
+		f.Update(g.world, g.bunny, others, dt, g.difficulty.FoxSpeed)
 	}
 
 	g.foxTimer += dt

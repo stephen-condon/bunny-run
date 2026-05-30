@@ -78,6 +78,15 @@ func TestDifficultyCapsfoxInterval(t *testing.T) {
 	}
 }
 
+func TestDifficultyFoxSpeedScalesWithScrollSpeed(t *testing.T) {
+	d := NewDifficulty()
+	d.Update(15 * time.Second) // level 1: ScrollSpeed = 65
+	want := foxSpeed * (d.ScrollSpeed / baseScrollSpeed)
+	if d.FoxSpeed != want {
+		t.Errorf("FoxSpeed want %v got %v", want, d.FoxSpeed)
+	}
+}
+
 func TestDifficultyIdempotentUpdate(t *testing.T) {
 	d := NewDifficulty()
 	d.Update(15 * time.Second)

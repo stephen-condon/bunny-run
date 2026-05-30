@@ -29,7 +29,7 @@ func TestFoxPatrolMovesAlongPath(t *testing.T) {
 	f.patrolTarget = Vec2{8, 5}
 	b := NewBunny(0, 0)
 
-	f.Update(w, b, nil, 1.0/foxSpeed)
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	if f.Pos.X != 6 {
 		t.Errorf("fox should have moved right to 6, got %d", f.Pos.X)
@@ -42,7 +42,7 @@ func TestFoxPeripheralDetection(t *testing.T) {
 	f.Facing = DirRight
 
 	b := NewBunny(6, 5) // 1 tile away — within peripheral radius
-	spotted := f.Update(w, b, nil, 0)
+	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
 		t.Error("fox should spot bunny within peripheral radius (1 tile)")
 	}
@@ -54,7 +54,7 @@ func TestFoxVisionConeDetection(t *testing.T) {
 	f.Facing = DirRight
 
 	b := NewBunny(9, 5) // 4 tiles ahead in facing direction
-	spotted := f.Update(w, b, nil, 0)
+	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
 		t.Error("fox should spot bunny in vision cone")
 	}
@@ -67,7 +67,7 @@ func TestFoxVisionBlockedByTree(t *testing.T) {
 	f.Facing = DirRight
 
 	b := NewBunny(9, 5)
-	spotted := f.Update(w, b, nil, 0)
+	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if spotted {
 		t.Error("fox vision should be blocked by tree")
 	}
@@ -81,7 +81,7 @@ func TestFoxDoesNotSeeHiddenBunny(t *testing.T) {
 
 	b := NewBunny(7, 5)
 	b.Hidden = true
-	spotted := f.Update(w, b, nil, 0)
+	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if spotted {
 		t.Error("fox should not spot hidden bunny in bush")
 	}
@@ -93,7 +93,7 @@ func TestFoxChasesAfterSpotting(t *testing.T) {
 	f.Facing = DirRight
 
 	b := NewBunny(6, 5) // adjacent, spotted by peripheral
-	f.Update(w, b, nil, 0)
+	f.Update(w, b, nil, 0, foxSpeed)
 	if f.State != FoxStateChase {
 		t.Errorf("fox should be in chase state after spotting bunny, got %v", f.State)
 	}
@@ -106,7 +106,7 @@ func TestFoxAlertPropagates(t *testing.T) {
 	f1.Facing = DirRight
 
 	b := NewBunny(6, 5)
-	f1.Update(w, b, []*Fox{f2}, 0)
+	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
 
 	if f2.State != FoxStateChase {
 		t.Errorf("f2 should be alerted and chasing, got %v", f2.State)
@@ -120,7 +120,7 @@ func TestFoxAlertDoesNotReachFarFox(t *testing.T) {
 	f1.Facing = DirRight
 
 	b := NewBunny(6, 5)
-	f1.Update(w, b, []*Fox{f2}, 0)
+	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
 
 	if f2.State == FoxStateChase {
 		t.Error("f2 should not be alerted when too far away")
@@ -137,7 +137,7 @@ func TestFoxWandersWhenBunnyHidesInBush(t *testing.T) {
 	b := NewBunny(9, 5)
 	b.Hidden = true // fox is >3 tiles away (Manhattan dist = 4)
 	// Pass enough dt to tick the movement accumulator once.
-	f.Update(w, b, nil, 1.0/foxSpeed)
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	if f.State != FoxStateWander {
 		t.Errorf("fox should enter wander state when bunny hides in bush, got %v", f.State)
@@ -151,7 +151,7 @@ func TestFoxReturnsToPatrolAfterWander(t *testing.T) {
 	f.wanderTimer = 0.1 // just about to expire
 
 	b := NewBunny(0, 0)
-	f.Update(w, b, nil, 1.0/foxSpeed)
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	if f.State != FoxStatePatrol {
 		t.Errorf("fox should return to patrol after wander, got %v", f.State)
