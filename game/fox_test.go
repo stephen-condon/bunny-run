@@ -4,7 +4,12 @@ import "testing"
 
 func newTestFox(x, y int) *Fox {
 	pos := Vec2{x, y}
-	return NewFox(pos, PatrolPath{A: Vec2{x - 3, y}, B: Vec2{x + 3, y}}, 42)
+	// Rectangle: W0={x,y}, W1={x+3,y}, W2={x+3,y+2}, W3={x,y+2}
+	// patrolIdx starts at 1 so the fox heads toward W1={x+3,y} on spawn.
+	patrol := PatrolPath{Waypoints: [4]Vec2{
+		{x, y}, {x + 3, y}, {x + 3, y + 2}, {x, y + 2},
+	}}
+	return NewFox(pos, patrol, 42)
 }
 
 func TestFoxCatchesBunny(t *testing.T) {
@@ -25,9 +30,8 @@ func TestFoxDoesNotCatchBunnyOnDifferentTile(t *testing.T) {
 
 func TestFoxPatrolMovesAlongPath(t *testing.T) {
 	w := newFakeWorld(20, 20)
-	f := newTestFox(5, 5)
-	f.patrolTarget = Vec2{8, 5}
-	b := NewBunny(0, 19) // outside vision radius
+	f := newTestFox(5, 5) // patrolIdx=1, target W1={8,5}
+	b := NewBunny(0, 19)  // outside vision radius
 
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
