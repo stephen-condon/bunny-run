@@ -40,32 +40,32 @@ var dirVec = [4]Vec2{
 	DirUp:    {0, -1},
 }
 
-// PatrolPath defines the endpoints of a fox patrol segment.
+// PatrolPath defines the four waypoints of a fox patrol loop, visited 0→1→2→3→0.
 type PatrolPath struct {
-	A, B Vec2
+	Waypoints [4]Vec2
 }
 
 // Fox is an enemy that patrols and chases the bunny.
 type Fox struct {
-	Pos          Vec2
-	State        FoxState
-	patrol       PatrolPath
-	patrolTarget Vec2 // current patrol waypoint (A or B)
-	lastKnown    Vec2 // last known bunny position
-	wanderTimer  float64
-	wanderDir    Dir
-	moveAccum    float64
-	rng          *rand.Rand
+	Pos         Vec2
+	State       FoxState
+	patrol      PatrolPath
+	patrolIdx   int  // index of the current patrol target waypoint
+	lastKnown   Vec2 // last known bunny position
+	wanderTimer float64
+	wanderDir   Dir
+	moveAccum   float64
+	rng         *rand.Rand
 }
 
 // NewFox creates a fox at pos with the given patrol path.
 func NewFox(pos Vec2, patrol PatrolPath, seed int64) *Fox {
 	f := &Fox{
-		Pos:          pos,
-		State:        FoxStatePatrol,
-		patrol:       patrol,
-		patrolTarget: patrol.B,
-		rng:          rand.New(rand.NewSource(seed)),
+		Pos:       pos,
+		State:     FoxStatePatrol,
+		patrol:    patrol,
+		patrolIdx: 1,
+		rng:       rand.New(rand.NewSource(seed)),
 	}
 	return f
 }
@@ -162,15 +162,12 @@ func abs(x int) int {
 }
 
 func (f *Fox) stepPatrol(world WorldReader) {
-	if f.Pos == f.patrolTarget {
-		// Flip waypoint.
-		if f.patrolTarget == f.patrol.B {
-			f.patrolTarget = f.patrol.A
-		} else {
-			f.patrolTarget = f.patrol.B
-		}
+	target := f.patrol.Waypoints[f.patrolIdx]
+	if f.Pos == target {
+		f.patrolIdx = (f.patrolIdx + 1) % 4
+		target = f.patrol.Waypoints[f.patrolIdx]
 	}
-	next := StepToward(f.Pos, f.patrolTarget)
+	next := StepToward(f.Pos, target)
 	if CanFoxEnter(next.X, next.Y, world) {
 		f.Pos = next
 	}

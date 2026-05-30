@@ -195,25 +195,11 @@ func (g *Game) spawnFox() {
 }
 
 func (g *Game) spawnFoxAt(spawnCol int) {
-	patrolAX := spawnCol - 5
-	if patrolAX < g.camera.LeftTile() {
-		patrolAX = g.camera.LeftTile()
-	}
-
-	spawnRow := -1
-	for _, r := range rand.Perm(WorldHeight) {
-		if CanFoxEnter(spawnCol, r, g.world) && CanFoxEnter(patrolAX, r, g.world) {
-			spawnRow = r
-			break
-		}
-	}
-	if spawnRow == -1 {
+	waypoints, ok := g.findPatrolRect(spawnCol)
+	if !ok {
 		return
 	}
-
-	pos := Vec2{spawnCol, spawnRow}
-	patrolA := Vec2{patrolAX, spawnRow}
-	fox := NewFox(pos, PatrolPath{A: patrolA, B: pos}, time.Now().UnixNano())
+	fox := NewFox(waypoints[0], PatrolPath{Waypoints: waypoints}, time.Now().UnixNano())
 	g.foxes = append(g.foxes, fox)
 
 	alive := g.foxes[:0]
@@ -223,6 +209,60 @@ func (g *Game) spawnFoxAt(spawnCol int) {
 		}
 	}
 	g.foxes = alive
+}
+
+// findPatrolRect searches exhaustively for a rectangular patrol path with all four
+// edges clear of fox-blocking tiles. It tries many widths, heights, and both vertical
+// directions. If no true rectangle fits, it falls back to a degenerate flat rectangle
+// (a horizontal segment) so a fox always spawns.
+func (g *Game) findPatrolRect(spawnCol int) ([4]Vec2, bool) {
+	widths := []int{4, 5, 6, 3, 7, 8, 2}
+	heights := []int{3, 4, 2, 5, 6, 1}
+	hDirs := []int{1, -1}
+
+	for _, row := range rand.Perm(WorldHeight) {
+		for _, w := range widths {
+			leftCol := spawnCol - w
+			if leftCol < 0 {
+				continue
+			}
+			for _, h := range heights {
+				for _, hDir := range hDirs {
+					otherRow := row + h*hDir
+					if otherRow < 0 || otherRow >= WorldHeight {
+						continue
+					}
+					w0 := Vec2{spawnCol, row}
+					w1 := Vec2{leftCol, row}
+					w2 := Vec2{leftCol, otherRow}
+					w3 := Vec2{spawnCol, otherRow}
+					if foxSegmentClear(w0, w1, g.world) &&
+						foxSegmentClear(w1, w2, g.world) &&
+						foxSegmentClear(w2, w3, g.world) &&
+						foxSegmentClear(w3, w0, g.world) {
+						return [4]Vec2{w0, w1, w2, w3}, true
+					}
+				}
+			}
+		}
+	}
+
+	// Fallback: flat degenerate rectangle on any clear horizontal segment.
+	for _, row := range rand.Perm(WorldHeight) {
+		for _, w := range widths {
+			leftCol := spawnCol - w
+			if leftCol < 0 {
+				continue
+			}
+			w0 := Vec2{spawnCol, row}
+			w1 := Vec2{leftCol, row}
+			if foxSegmentClear(w0, w1, g.world) {
+				return [4]Vec2{w0, w1, w1, w0}, true
+			}
+		}
+	}
+
+	return [4]Vec2{}, false
 }
 
 func (g *Game) triggerGameOver() {

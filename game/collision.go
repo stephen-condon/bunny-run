@@ -53,6 +53,32 @@ func ManhattanDist(a, b Vec2) int {
 	return dx + dy
 }
 
+// foxSegmentClear returns true when every tile on the axis-aligned segment from→to is fox-passable.
+func foxSegmentClear(from, to Vec2, w WorldReader) bool {
+	if from.X == to.X {
+		minY, maxY := from.Y, to.Y
+		if minY > maxY {
+			minY, maxY = maxY, minY
+		}
+		for y := minY; y <= maxY; y++ {
+			if !CanFoxEnter(from.X, y, w) {
+				return false
+			}
+		}
+	} else {
+		minX, maxX := from.X, to.X
+		if minX > maxX {
+			minX, maxX = maxX, minX
+		}
+		for x := minX; x <= maxX; x++ {
+			if !CanFoxEnter(x, from.Y, w) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // StepToward returns a unit step from src toward dst (one tile at a time).
 // Prefers horizontal movement when dx == dy.
 func StepToward(src, dst Vec2) Vec2 {

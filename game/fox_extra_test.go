@@ -35,19 +35,18 @@ func TestFoxWanderChangesDirectionWhenBlocked(t *testing.T) {
 	}
 }
 
-func TestFoxPatrolFlipsWaypoint(t *testing.T) {
+func TestFoxPatrolAdvancesWaypoint(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
-	// Place fox exactly at patrol.B so it should flip to A.
+	// Place fox at W1={8,5} with patrolIdx=1; on next step it should advance to idx 2.
 	f.Pos = Vec2{8, 5}
-	f.patrolTarget = Vec2{8, 5} // already at B
+	f.patrolIdx = 1
 
 	b := NewBunny(0, 19) // outside vision radius
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
-	// After flipping, patrolTarget should be A.
-	if f.patrolTarget != f.patrol.A {
-		t.Errorf("patrol target should flip to A, got %v", f.patrolTarget)
+	if f.patrolIdx != 2 {
+		t.Errorf("patrol index should advance to 2, got %d", f.patrolIdx)
 	}
 }
 
@@ -75,9 +74,8 @@ func TestWanderDuration(t *testing.T) {
 
 func TestFoxMovesProportionallyWithScrollSpeed(t *testing.T) {
 	w := newFakeWorld(20, 20)
-	f := newTestFox(5, 5)
-	f.patrolTarget = Vec2{8, 5}
-	b := NewBunny(0, 19) // outside vision radius
+	f := newTestFox(5, 5) // patrolIdx=1, target W1={8,5}
+	b := NewBunny(0, 19)  // outside vision radius
 	// At 2× fox speed with same dt that normally steps 1 tile, should step 2 tiles.
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed*2)
 	if f.Pos.X != 7 {
