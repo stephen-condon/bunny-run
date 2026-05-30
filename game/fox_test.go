@@ -101,7 +101,7 @@ func TestFoxChasesAfterSpotting(t *testing.T) {
 func TestFoxAlertPropagates(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f1 := newTestFox(5, 5)
-	f2 := newTestFox(8, 5) // within alertRadius
+	f2 := newTestFox(8, 5) // alert propagates regardless of distance
 
 	b := NewBunny(6, 5)
 	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
