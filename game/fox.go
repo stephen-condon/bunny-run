@@ -8,7 +8,6 @@ import (
 const (
 	foxSpeed         = 3.0 // tiles per second
 	visionRadius     = 6   // tiles (Chebyshev), 360°
-	alertRadius      = 6   // tiles (Chebyshev) for alerting nearby foxes
 	bushWanderMinSec = 3.0
 	bushWanderMaxSec = 5.0
 	lostInterestDist = 1 // tiles — fox "arrives" at last known pos within this dist
@@ -108,10 +107,8 @@ func (f *Fox) Update(world WorldReader, bunny *Bunny, otherFoxes []*Fox, dt floa
 
 // Alert forces this fox into chase mode toward pos.
 func (f *Fox) Alert(pos Vec2) {
-	if f.State == FoxStatePatrol {
-		f.lastKnown = pos
-		f.State = FoxStateChase
-	}
+	f.lastKnown = pos
+	f.State = FoxStateChase
 }
 
 func (f *Fox) alertNearby(others []*Fox, pos Vec2) {
@@ -119,9 +116,7 @@ func (f *Fox) alertNearby(others []*Fox, pos Vec2) {
 		if o == f {
 			continue
 		}
-		if ChebyshevDist(f.Pos, o.Pos) <= alertRadius {
-			o.Alert(pos)
-		}
+		o.Alert(pos)
 	}
 }
 

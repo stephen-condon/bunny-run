@@ -101,7 +101,7 @@ func TestFoxChasesAfterSpotting(t *testing.T) {
 func TestFoxAlertPropagates(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f1 := newTestFox(5, 5)
-	f2 := newTestFox(8, 5) // within alertRadius
+	f2 := newTestFox(8, 5) // alert propagates regardless of distance
 
 	b := NewBunny(6, 5)
 	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
@@ -111,16 +111,19 @@ func TestFoxAlertPropagates(t *testing.T) {
 	}
 }
 
-func TestFoxAlertDoesNotReachFarFox(t *testing.T) {
+func TestFoxAlertReachesFarFox(t *testing.T) {
 	w := newFakeWorld(30, 20)
 	f1 := newTestFox(5, 5)
-	f2 := newTestFox(20, 5) // beyond alertRadius
+	f2 := newTestFox(20, 5) // well beyond old alertRadius of 6
 
 	b := NewBunny(6, 5)
 	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
 
-	if f2.State == FoxStateChase {
-		t.Error("f2 should not be alerted when too far away")
+	if f2.State != FoxStateChase {
+		t.Errorf("f2 should be alerted even when far away, got %v", f2.State)
+	}
+	if f2.lastKnown != (Vec2{6, 5}) {
+		t.Errorf("f2.lastKnown should be bunny pos {6,5}, got %v", f2.lastKnown)
 	}
 }
 
@@ -166,12 +169,28 @@ func TestFoxAlert(t *testing.T) {
 	}
 }
 
-func TestFoxAlertNoOpWhenAlreadyChasing(t *testing.T) {
+func TestFoxAlertUpdatesLastKnownWhenChasing(t *testing.T) {
 	f := newTestFox(5, 5)
 	f.State = FoxStateChase
 	f.lastKnown = Vec2{3, 3}
 	f.Alert(Vec2{9, 9})
-	if f.lastKnown != (Vec2{3, 3}) {
-		t.Error("alert should not override last known when already chasing")
+	if f.lastKnown != (Vec2{9, 9}) {
+		t.Errorf("alert should update last known even when already chasing, got %v", f.lastKnown)
+	}
+	if f.State != FoxStateChase {
+		t.Errorf("fox should remain in chase state, got %v", f.State)
+	}
+}
+
+func TestFoxAlertWakesWanderingFox(t *testing.T) {
+	f := newTestFox(5, 5)
+	f.State = FoxStateWander
+	f.wanderTimer = 4.0
+	f.Alert(Vec2{7, 7})
+	if f.State != FoxStateChase {
+		t.Errorf("alerted wandering fox should enter chase, got %v", f.State)
+	}
+	if f.lastKnown != (Vec2{7, 7}) {
+		t.Errorf("lastKnown should be {7,7}, got %v", f.lastKnown)
 	}
 }
