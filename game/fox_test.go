@@ -39,7 +39,6 @@ func TestFoxPatrolMovesAlongPath(t *testing.T) {
 func TestFoxPeripheralDetection(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
-	f.Facing = DirRight
 
 	b := NewBunny(6, 5) // 1 tile away — within peripheral radius
 	spotted := f.Update(w, b, nil, 0, foxSpeed)
@@ -51,7 +50,6 @@ func TestFoxPeripheralDetection(t *testing.T) {
 func TestFoxDetectsNearbyBunny(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
-	f.Facing = DirRight
 
 	b := NewBunny(9, 5) // 4 tiles away
 	spotted := f.Update(w, b, nil, 0, foxSpeed)
@@ -64,7 +62,6 @@ func TestFoxVisionBlockedByTree(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	w.set(7, 5, TileTree)
 	f := newTestFox(5, 5)
-	f.Facing = DirRight
 
 	b := NewBunny(9, 5)
 	spotted := f.Update(w, b, nil, 0, foxSpeed)
@@ -77,7 +74,6 @@ func TestFoxDoesNotSeeHiddenBunny(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	w.set(7, 5, TileBush)
 	f := newTestFox(5, 5)
-	f.Facing = DirRight
 
 	b := NewBunny(7, 5)
 	b.Hidden = true
@@ -90,7 +86,6 @@ func TestFoxDoesNotSeeHiddenBunny(t *testing.T) {
 func TestFoxChasesAfterSpotting(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
-	f.Facing = DirRight
 
 	b := NewBunny(6, 5) // adjacent, spotted by peripheral
 	f.Update(w, b, nil, 0, foxSpeed)
@@ -103,7 +98,6 @@ func TestFoxAlertPropagates(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f1 := newTestFox(5, 5)
 	f2 := newTestFox(8, 5) // within alertRadius
-	f1.Facing = DirRight
 
 	b := NewBunny(6, 5)
 	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
@@ -117,7 +111,6 @@ func TestFoxAlertDoesNotReachFarFox(t *testing.T) {
 	w := newFakeWorld(30, 20)
 	f1 := newTestFox(5, 5)
 	f2 := newTestFox(20, 5) // beyond alertRadius
-	f1.Facing = DirRight
 
 	b := NewBunny(6, 5)
 	f1.Update(w, b, []*Fox{f2}, 0, foxSpeed)
