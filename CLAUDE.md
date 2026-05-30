@@ -58,16 +58,7 @@ go test ./game/... -v
 
 **Screen resolution:** 1280×720, tile size 32 px → 40×22 tile grid. `Camera.X` is the only scroll state; `IsCaughtByLeftEdge` implements the left-edge death condition.
 
-## Workflow
-    1. Pull main from remote & checkout
-    2. create a new branch for changes (use conventional commits naming, e.g. "feat/add-bunnies" or "chore/fix-ci" or "docs/update-claude-md")
-    3. plan changes first, ask user questions to resolve any ambiguity, both ahead of time & as changes are implemented
-    4. use atomic commits, leveraging conventional commits to write the commit message
-    5. push your branch to the remote
-    6. raise a PR, with automerge enabled
-    7. poll PR every 120 seconds for 600s, failed checks should be surfaced, check also if the PR is out of sync with main, if so, remediate. If merge conflicts are detected, ask user to resolve
-
-### Release Tagging
+## Release Tagging
 When ready to ship a release use:
 `git tag v1.0.0`
 `git push origin v1.0.0`
