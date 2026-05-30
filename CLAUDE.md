@@ -72,4 +72,4 @@ When ready to ship a release use:
 `git tag v1.0.0`
 `git push origin v1.0.0`
 
-Ensure you follow semantic versioning based on the conventional commits scheme
+Ensure you follow semantic versioning based on the conventional commits scheme. Ship a release when the version would increment based on semantic versioning analysis of the merged PR.
