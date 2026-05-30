@@ -5,7 +5,7 @@ echo "Running pre-commit checks..."
 
 # fmt: fail if any .go file needs formatting
 echo "→ fmt..."
-UNFORMATTED=$(gofmt -l .)
+UNFORMATTED=$(gofmt -l -w .)
 if [ -n "$UNFORMATTED" ]; then
   echo "Files need formatting (run: gofmt -w .):"
   echo "$UNFORMATTED"

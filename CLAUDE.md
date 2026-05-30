@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Prior to implementing anything beyond a simple bugfix or config change, always use plan mode. When planning, use Opus, when implementing, use Sonnet. When researching specific facts, use a Haiku subagent. Any time there is an opportunity to do something in parallel, spawn subagents to accomplish it.
 
+<IMPORTANT>Use the git-workflow skill for both planning & implementation</IMPORTANT>
+
 ## Commands
 
 ```bash

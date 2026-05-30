@@ -100,8 +100,8 @@ func TestFoxUpdateFacingAllDirections(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	// Test each facing direction by placing bunny in a clear path.
 	tests := []struct {
-		foxPos    Vec2
-		lastKnown Vec2
+		foxPos     Vec2
+		lastKnown  Vec2
 		wantFacing Dir
 	}{
 		{Vec2{5, 5}, Vec2{8, 5}, DirRight}, // lastKnown must be >lostInterestDist away
