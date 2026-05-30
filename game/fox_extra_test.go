@@ -88,35 +88,9 @@ func TestFoxMovesProportionallyWithScrollSpeed(t *testing.T) {
 func TestFoxDetectsBunnyBehindAt6Tiles(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(11, 5)
-	f.Facing = DirRight // facing away from bunny
 	b := NewBunny(5, 5) // 6 tiles behind fox
 	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
 		t.Error("fox should spot bunny 6 tiles behind (360° radius)")
-	}
-}
-
-func TestFoxUpdateFacingAllDirections(t *testing.T) {
-	w := newFakeWorld(20, 20)
-	// Test each facing direction by placing bunny in a clear path.
-	tests := []struct {
-		foxPos     Vec2
-		lastKnown  Vec2
-		wantFacing Dir
-	}{
-		{Vec2{5, 5}, Vec2{8, 5}, DirRight}, // lastKnown must be >lostInterestDist away
-		{Vec2{5, 5}, Vec2{2, 5}, DirLeft},
-		{Vec2{5, 5}, Vec2{5, 8}, DirDown},
-		{Vec2{5, 5}, Vec2{5, 2}, DirUp},
-	}
-	for _, tc := range tests {
-		f := newTestFox(tc.foxPos.X, tc.foxPos.Y)
-		f.State = FoxStateChase
-		f.lastKnown = tc.lastKnown
-		b := NewBunny(0, 19) // out of range
-		f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
-		if f.Facing != tc.wantFacing {
-			t.Errorf("pos %v → %v: want facing %v, got %v", tc.foxPos, tc.lastKnown, tc.wantFacing, f.Facing)
-		}
 	}
 }

@@ -48,7 +48,6 @@ type PatrolPath struct {
 // Fox is an enemy that patrols and chases the bunny.
 type Fox struct {
 	Pos          Vec2
-	Facing       Dir
 	State        FoxState
 	patrol       PatrolPath
 	patrolTarget Vec2 // current patrol waypoint (A or B)
@@ -63,7 +62,6 @@ type Fox struct {
 func NewFox(pos Vec2, patrol PatrolPath, seed int64) *Fox {
 	f := &Fox{
 		Pos:          pos,
-		Facing:       DirRight,
 		State:        FoxStatePatrol,
 		patrol:       patrol,
 		patrolTarget: patrol.B,
@@ -173,7 +171,6 @@ func (f *Fox) stepPatrol(world WorldReader) {
 		}
 	}
 	next := StepToward(f.Pos, f.patrolTarget)
-	f.updateFacing(next)
 	if CanFoxEnter(next.X, next.Y, world) {
 		f.Pos = next
 	}
@@ -193,7 +190,6 @@ func (f *Fox) stepChase(bunny *Bunny, world WorldReader) {
 		return
 	}
 	next := StepToward(f.Pos, f.lastKnown)
-	f.updateFacing(next)
 	if CanFoxEnter(next.X, next.Y, world) {
 		f.Pos = next
 	}
@@ -205,24 +201,8 @@ func (f *Fox) stepWander(world WorldReader) {
 	next := Vec2{f.Pos.X + dv.X, f.Pos.Y + dv.Y}
 	if CanFoxEnter(next.X, next.Y, world) {
 		f.Pos = next
-		f.updateFacing(next)
 	} else {
 		f.wanderDir = Dir(f.rng.Intn(4))
-	}
-}
-
-func (f *Fox) updateFacing(next Vec2) {
-	dx := next.X - f.Pos.X
-	dy := next.Y - f.Pos.Y
-	switch {
-	case dx > 0:
-		f.Facing = DirRight
-	case dx < 0:
-		f.Facing = DirLeft
-	case dy > 0:
-		f.Facing = DirDown
-	case dy < 0:
-		f.Facing = DirUp
 	}
 }
 
