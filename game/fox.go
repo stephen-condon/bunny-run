@@ -75,8 +75,8 @@ func NewFox(pos Vec2, patrol PatrolPath, seed int64) *Fox {
 }
 
 // Update runs the fox AI for one frame. Returns true if the fox spotted the bunny.
-// otherFoxes is used to propagate alerts.
-func (f *Fox) Update(world WorldReader, bunny *Bunny, otherFoxes []*Fox, dt float64) bool {
+// otherFoxes is used to propagate alerts. speed is the current effective tiles-per-second.
+func (f *Fox) Update(world WorldReader, bunny *Bunny, otherFoxes []*Fox, dt float64, speed float64) bool {
 	spotted := false
 
 	if !bunny.Hidden {
@@ -88,7 +88,7 @@ func (f *Fox) Update(world WorldReader, bunny *Bunny, otherFoxes []*Fox, dt floa
 		}
 	}
 
-	f.moveAccum += foxSpeed * dt
+	f.moveAccum += speed * dt
 
 	for f.moveAccum >= 1.0 {
 		f.moveAccum -= 1.0
@@ -98,7 +98,7 @@ func (f *Fox) Update(world WorldReader, bunny *Bunny, otherFoxes []*Fox, dt floa
 		case FoxStateChase:
 			f.stepChase(bunny, world)
 		case FoxStateWander:
-			f.wanderTimer -= 1.0 / foxSpeed
+			f.wanderTimer -= 1.0 / speed
 			if f.wanderTimer <= 0 {
 				f.State = FoxStatePatrol
 			} else {

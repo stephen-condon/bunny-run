@@ -10,7 +10,7 @@ func TestFoxStepWander(t *testing.T) {
 	f.wanderDir = DirRight
 
 	startX := f.Pos.X
-	f.Update(w, NewBunny(0, 0), nil, 1.0/foxSpeed)
+	f.Update(w, NewBunny(0, 0), nil, 1.0/foxSpeed, foxSpeed)
 
 	// Fox should have moved (or changed direction if blocked).
 	// Since the world is clear, it should move right.
@@ -28,7 +28,7 @@ func TestFoxWanderChangesDirectionWhenBlocked(t *testing.T) {
 	f.wanderDir = DirRight
 	f.rng.Seed(1) // deterministic direction change
 
-	f.Update(w, NewBunny(0, 0), nil, 1.0/foxSpeed)
+	f.Update(w, NewBunny(0, 0), nil, 1.0/foxSpeed, foxSpeed)
 	// Fox could not go right, must have changed direction.
 	if f.Pos.X == 6 {
 		t.Error("fox should not enter tree tile")
@@ -43,7 +43,7 @@ func TestFoxPatrolFlipsWaypoint(t *testing.T) {
 	f.patrolTarget = Vec2{8, 5} // already at B
 
 	b := NewBunny(0, 0)
-	f.Update(w, b, nil, 1.0/foxSpeed)
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	// After flipping, patrolTarget should be A.
 	if f.patrolTarget != f.patrol.A {
@@ -58,7 +58,7 @@ func TestFoxChaseLosesInterestAtLastKnown(t *testing.T) {
 	f.lastKnown = Vec2{5, 5} // fox IS at last known position
 	b := NewBunny(0, 0)      // bunny is not hidden, but far away and not in cone
 
-	f.Update(w, b, nil, 1.0/foxSpeed)
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	if f.State != FoxStatePatrol {
 		t.Errorf("fox should return to patrol at last known pos, got %v", f.State)
@@ -73,12 +73,24 @@ func TestWanderDuration(t *testing.T) {
 	}
 }
 
+func TestFoxMovesProportionallyWithScrollSpeed(t *testing.T) {
+	w := newFakeWorld(20, 20)
+	f := newTestFox(5, 5)
+	f.patrolTarget = Vec2{8, 5}
+	b := NewBunny(0, 0)
+	// At 2× fox speed with same dt that normally steps 1 tile, should step 2 tiles.
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed*2)
+	if f.Pos.X != 7 {
+		t.Errorf("fox at 2x speed should move 2 tiles, got x=%d", f.Pos.X)
+	}
+}
+
 func TestFoxVisionConeUpDirection(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 10)
 	f.Facing = DirUp
 	b := NewBunny(5, 6) // 4 tiles up
-	spotted := f.Update(w, b, nil, 0)
+	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
 		t.Error("fox should spot bunny in upward vision cone")
 	}
@@ -89,7 +101,7 @@ func TestFoxVisionConeDownDirection(t *testing.T) {
 	f := newTestFox(5, 5)
 	f.Facing = DirDown
 	b := NewBunny(5, 9) // 4 tiles down
-	spotted := f.Update(w, b, nil, 0)
+	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
 		t.Error("fox should spot bunny in downward vision cone")
 	}
@@ -113,7 +125,7 @@ func TestFoxUpdateFacingAllDirections(t *testing.T) {
 		f.State = FoxStateChase
 		f.lastKnown = tc.lastKnown
 		b := NewBunny(0, 19) // out of range
-		f.Update(w, b, nil, 1.0/foxSpeed)
+		f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 		if f.Facing != tc.wantFacing {
 			t.Errorf("pos %v → %v: want facing %v, got %v", tc.foxPos, tc.lastKnown, tc.wantFacing, f.Facing)
 		}

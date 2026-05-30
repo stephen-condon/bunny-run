@@ -22,6 +22,7 @@ type Difficulty struct {
 	ScrollSpeed     float64
 	ObstacleDensity float64
 	FoxInterval     time.Duration
+	FoxSpeed        float64
 	level           int
 }
 
@@ -31,6 +32,7 @@ func NewDifficulty() Difficulty {
 		ScrollSpeed:     baseScrollSpeed,
 		ObstacleDensity: baseObstacleDensity,
 		FoxInterval:     baseFoxInterval,
+		FoxSpeed:        foxSpeed,
 	}
 }
 
@@ -51,6 +53,7 @@ func (d *Difficulty) Update(elapsed time.Duration) bool {
 		if d.ScrollSpeed > maxScrollSpeed {
 			d.ScrollSpeed = maxScrollSpeed
 		}
+		d.FoxSpeed = foxSpeed * (d.ScrollSpeed / baseScrollSpeed)
 		d.ObstacleDensity += obstacleDensityIncrement
 		if d.ObstacleDensity > maxObstacleDensity {
 			d.ObstacleDensity = maxObstacleDensity
