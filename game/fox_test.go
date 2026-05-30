@@ -27,7 +27,7 @@ func TestFoxPatrolMovesAlongPath(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
 	f.patrolTarget = Vec2{8, 5}
-	b := NewBunny(0, 0)
+	b := NewBunny(0, 19) // outside vision radius
 
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
@@ -48,15 +48,15 @@ func TestFoxPeripheralDetection(t *testing.T) {
 	}
 }
 
-func TestFoxVisionConeDetection(t *testing.T) {
+func TestFoxDetectsNearbyBunny(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
 	f.Facing = DirRight
 
-	b := NewBunny(9, 5) // 4 tiles ahead in facing direction
+	b := NewBunny(9, 5) // 4 tiles away
 	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
-		t.Error("fox should spot bunny in vision cone")
+		t.Error("fox should spot bunny within vision radius")
 	}
 }
 
@@ -150,7 +150,7 @@ func TestFoxReturnsToPatrolAfterWander(t *testing.T) {
 	f.State = FoxStateWander
 	f.wanderTimer = 0.1 // just about to expire
 
-	b := NewBunny(0, 0)
+	b := NewBunny(0, 19) // outside vision radius
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	if f.State != FoxStatePatrol {

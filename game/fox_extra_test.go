@@ -10,7 +10,7 @@ func TestFoxStepWander(t *testing.T) {
 	f.wanderDir = DirRight
 
 	startX := f.Pos.X
-	f.Update(w, NewBunny(0, 0), nil, 1.0/foxSpeed, foxSpeed)
+	f.Update(w, NewBunny(0, 19), nil, 1.0/foxSpeed, foxSpeed) // bunny outside vision radius
 
 	// Fox should have moved (or changed direction if blocked).
 	// Since the world is clear, it should move right.
@@ -28,7 +28,7 @@ func TestFoxWanderChangesDirectionWhenBlocked(t *testing.T) {
 	f.wanderDir = DirRight
 	f.rng.Seed(1) // deterministic direction change
 
-	f.Update(w, NewBunny(0, 0), nil, 1.0/foxSpeed, foxSpeed)
+	f.Update(w, NewBunny(0, 19), nil, 1.0/foxSpeed, foxSpeed) // bunny outside vision radius
 	// Fox could not go right, must have changed direction.
 	if f.Pos.X == 6 {
 		t.Error("fox should not enter tree tile")
@@ -42,7 +42,7 @@ func TestFoxPatrolFlipsWaypoint(t *testing.T) {
 	f.Pos = Vec2{8, 5}
 	f.patrolTarget = Vec2{8, 5} // already at B
 
-	b := NewBunny(0, 0)
+	b := NewBunny(0, 19) // outside vision radius
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
 	// After flipping, patrolTarget should be A.
@@ -56,7 +56,7 @@ func TestFoxChaseLosesInterestAtLastKnown(t *testing.T) {
 	f := newTestFox(5, 5)
 	f.State = FoxStateChase
 	f.lastKnown = Vec2{5, 5} // fox IS at last known position
-	b := NewBunny(0, 0)      // bunny is not hidden, but far away and not in cone
+	b := NewBunny(0, 19)     // bunny outside vision radius
 
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
 
@@ -77,7 +77,7 @@ func TestFoxMovesProportionallyWithScrollSpeed(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
 	f.patrolTarget = Vec2{8, 5}
-	b := NewBunny(0, 0)
+	b := NewBunny(0, 19) // outside vision radius
 	// At 2× fox speed with same dt that normally steps 1 tile, should step 2 tiles.
 	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed*2)
 	if f.Pos.X != 7 {
@@ -85,25 +85,14 @@ func TestFoxMovesProportionallyWithScrollSpeed(t *testing.T) {
 	}
 }
 
-func TestFoxVisionConeUpDirection(t *testing.T) {
+func TestFoxDetectsBunnyBehindAt6Tiles(t *testing.T) {
 	w := newFakeWorld(20, 20)
-	f := newTestFox(5, 10)
-	f.Facing = DirUp
-	b := NewBunny(5, 6) // 4 tiles up
+	f := newTestFox(11, 5)
+	f.Facing = DirRight // facing away from bunny
+	b := NewBunny(5, 5) // 6 tiles behind fox
 	spotted := f.Update(w, b, nil, 0, foxSpeed)
 	if !spotted {
-		t.Error("fox should spot bunny in upward vision cone")
-	}
-}
-
-func TestFoxVisionConeDownDirection(t *testing.T) {
-	w := newFakeWorld(20, 20)
-	f := newTestFox(5, 5)
-	f.Facing = DirDown
-	b := NewBunny(5, 9) // 4 tiles down
-	spotted := f.Update(w, b, nil, 0, foxSpeed)
-	if !spotted {
-		t.Error("fox should spot bunny in downward vision cone")
+		t.Error("fox should spot bunny 6 tiles behind (360° radius)")
 	}
 }
 
@@ -111,8 +100,8 @@ func TestFoxUpdateFacingAllDirections(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	// Test each facing direction by placing bunny in a clear path.
 	tests := []struct {
-		foxPos     Vec2
-		lastKnown  Vec2
+		foxPos    Vec2
+		lastKnown Vec2
 		wantFacing Dir
 	}{
 		{Vec2{5, 5}, Vec2{8, 5}, DirRight}, // lastKnown must be >lostInterestDist away

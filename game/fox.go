@@ -6,14 +6,12 @@ import (
 )
 
 const (
-	foxSpeed          = 3.0 // tiles per second
-	visionConeDepth   = 5   // tiles
-	visionConeHalfAng = 1   // cone half-width at each distance step (Manhattan spread)
-	peripheralRadius  = 1   // tiles (Chebyshev)
-	alertRadius       = 6   // tiles (Chebyshev) for alerting nearby foxes
-	bushWanderMinSec  = 3.0
-	bushWanderMaxSec  = 5.0
-	lostInterestDist  = 1 // tiles — fox "arrives" at last known pos within this dist
+	foxSpeed         = 3.0 // tiles per second
+	visionRadius     = 6   // tiles (Chebyshev), 360°
+	alertRadius      = 6   // tiles (Chebyshev) for alerting nearby foxes
+	bushWanderMinSec = 3.0
+	bushWanderMaxSec = 5.0
+	lostInterestDist = 1 // tiles — fox "arrives" at last known pos within this dist
 )
 
 // FoxState represents what the fox is currently doing.
@@ -130,39 +128,10 @@ func (f *Fox) alertNearby(others []*Fox, pos Vec2) {
 }
 
 func (f *Fox) canSee(target Vec2, world WorldReader) bool {
-	// Peripheral circle: always detect within 1 tile.
-	if ChebyshevDist(f.Pos, target) <= peripheralRadius {
-		return true
+	if ChebyshevDist(f.Pos, target) > visionRadius {
+		return false
 	}
-	// Vision cone: cast tiles in facing direction.
-	dv := dirVec[f.Facing]
-	for depth := 1; depth <= visionConeDepth; depth++ {
-		cx := f.Pos.X + dv.X*depth
-		cy := f.Pos.Y + dv.Y*depth
-
-		// Check a spread of tiles perpendicular to the cone at this depth.
-		for spread := -depth / 2; spread <= depth/2; spread++ {
-			var tx, ty int
-			if dv.X != 0 {
-				tx = cx
-				ty = cy + spread
-			} else {
-				tx = cx + spread
-				ty = cy
-			}
-			if tx == target.X && ty == target.Y {
-				if !f.visionBlocked(target, world) {
-					return true
-				}
-			}
-		}
-
-		// If the center tile blocks vision, stop the cone.
-		if world.TileAt(cx, cy).BlocksVision() {
-			break
-		}
-	}
-	return false
+	return !f.visionBlocked(target, world)
 }
 
 // visionBlocked returns true if any tile along the straight line from fox to target blocks vision.
