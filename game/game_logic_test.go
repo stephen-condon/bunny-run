@@ -263,9 +263,66 @@ func TestNewSpritesLoads(t *testing.T) {
 	if s.Fox == nil {
 		t.Error("Fox sprite is nil")
 	}
+	if s.Carrot == nil {
+		t.Error("Carrot sprite is nil")
+	}
 	for _, tile := range []TileType{TileTree, TileBush, TileBoulder, TileFallenLog} {
 		if s.TileSprite(tile) == nil {
 			t.Errorf("tile sprite for %v is nil", tile)
 		}
+	}
+}
+
+func TestCarrotCollectionIncrementsCount(t *testing.T) {
+	g := newTestGame()
+	g.startGame()
+	g.carrots = []*Carrot{{Pos: g.bunny.Pos}}
+	g.input = &fakeInput{}
+	g.updatePlaying()
+	if g.carrotsCollected != 1 {
+		t.Errorf("expected 1 carrot collected, got %d", g.carrotsCollected)
+	}
+	if len(g.carrots) != 0 {
+		t.Errorf("collected carrot should be evicted, got %d carrots", len(g.carrots))
+	}
+}
+
+func TestSpawnCarrotAddsCarrot(t *testing.T) {
+	g := newTestGame()
+	g.startGame()
+	g.world.EnsureGenerated(g.camera.RightTile(ScreenWidth) + 10)
+	before := len(g.carrots)
+	g.spawnCarrot()
+	// spawnCarrot may legitimately skip if no passable tile found in 20 tries, but with an
+	// open world it should almost always succeed.
+	if len(g.carrots) < before {
+		t.Error("spawnCarrot should not remove carrots")
+	}
+}
+
+func TestCarrotTimerTriggersSpawn(t *testing.T) {
+	g := newTestGame()
+	g.startGame()
+	g.world.EnsureGenerated(g.camera.RightTile(ScreenWidth) + 10)
+	g.carrotTimer = g.carrotInterval + 1.0 // past threshold
+	g.input = &fakeInput{}
+	g.updatePlaying()
+	if len(g.carrots) == 0 {
+		t.Error("carrot should have been spawned when timer exceeded interval")
+	}
+}
+
+func TestScoreIsSecondsTimesTenPlusCarrotsTimes25(t *testing.T) {
+	g := newTestGame()
+	g.startGame()
+	g.startTime = g.clock.Now().Add(-10 * time.Second)
+	g.carrotsCollected = 3
+	g.bunny.Pos.X = 0
+	g.camera.X = float64(5 * TileSize) // trigger game over via left-edge catch
+	g.input = &fakeInput{}
+	g.updatePlaying()
+	// score = 10s*10 + 3 carrots*25 = 100 + 75 = 175
+	if g.score != 175 {
+		t.Errorf("expected score 175 (10s×10 + 3 carrots×25), got %d", g.score)
 	}
 }

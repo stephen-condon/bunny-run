@@ -12,6 +12,7 @@ import (
 type LeaderboardRow struct {
 	Name    string
 	Seconds int
+	Score   int
 }
 
 // Leaderboard renders the top-10 scores.
@@ -41,13 +42,13 @@ func (l *Leaderboard) Draw(screen *ebiten.Image) {
 	header := &text.DrawOptions{}
 	header.ColorScale.ScaleWithColor(color.RGBA{200, 200, 100, 255})
 	header.GeoM.Translate(380, 130)
-	text.Draw(screen, fmt.Sprintf("%-4s %-6s  %s", "#", "NAME", "SECONDS"), l.face, header)
+	text.Draw(screen, fmt.Sprintf("%-4s %-6s  %8s  %s", "#", "NAME", "SCORE", "TIME"), l.face, header)
 
 	for i, row := range l.rows {
 		o := &text.DrawOptions{}
 		o.ColorScale.ScaleWithColor(color.White)
 		o.GeoM.Translate(380, float64(170+i*40))
-		text.Draw(screen, fmt.Sprintf("%-4d %-6s  %d", i+1, row.Name, row.Seconds), l.face, o)
+		text.Draw(screen, fmt.Sprintf("%-4d %-6s  %8d  %ds", i+1, row.Name, row.Score, row.Seconds), l.face, o)
 	}
 
 	back := &text.DrawOptions{}
