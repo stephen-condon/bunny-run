@@ -11,6 +11,8 @@ requires splitting them into separate branches and executing them
 sequentially — complete and merge one PR before starting the next.
 </IMPORTANT>
 
+After every change, evaluate whether any CLAUDE.md descriptions are related to what changed and update stale entries accordingly.
+
 ## Commands
 
 ```bash
@@ -51,7 +53,7 @@ go test ./game/... -v
 
 **World generation (`game/world.go`):** Columns are generated lazily into a `map[int][]TileType` as the camera scrolls right. Every generated column guarantees at least one passable row for the bunny (corridor). Old columns are evicted via `Evict(minCol)`. Obstacle density and fox spawn rate are driven by `game/difficulty.go`, which increments every 15 seconds.
 
-**Fox AI (`game/fox.go`):** Three states — `Patrol` (walk A↔B), `Chase` (move to last-known bunny position), `Wander` (lost bunny in bush; random walk for 3–5 s). Detection uses a 5-tile forward vision cone (blocked by trees) plus a 1-tile peripheral circle. On spot, broadcasts an alert to all foxes within 6 tiles (Chebyshev). Bush concealment: if the bunny is on a bush tile AND no fox is within 3 tiles (Manhattan), `bunny.Hidden = true` — foxes skip detection entirely for hidden bunnies.
+**Fox AI (`game/fox.go`):** Three states — `Patrol` (walk A↔B), `Chase` (move to last-known bunny position), `Wander` (lost bunny in bush; random walk for 3–5 s). Detection uses a 6-tile 360° Chebyshev radius; line-of-sight is blocked by trees (`visionBlocked`). On spot, broadcasts an alert to all foxes (no distance limit). Bush concealment: if the bunny is on a bush tile AND no fox is within 3 tiles (Manhattan), `bunny.Hidden = true` — foxes skip detection entirely for hidden bunnies. A fox that reaches the bunny's exact tile catches it (`lostInterestDist = 0`).
 
 **Tile collision rules:**
 | Tile       | Blocks Bunny | Blocks Fox | Blocks Vision |
