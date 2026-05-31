@@ -14,22 +14,24 @@ const maxScores = 10
 type ScoreEntry struct {
 	Name    string    `json:"name"`
 	Seconds int       `json:"seconds"`
+	Carrots int       `json:"carrots"`
+	Score   int       `json:"score"` // Seconds*10 + Carrots*25
 	Date    time.Time `json:"date"`
 }
 
-// IsTopScore returns true if s would make the top-10 list given existing entries.
-func IsTopScore(s int, entries []ScoreEntry) bool {
+// IsTopScore returns true if score would make the top-10 list given existing entries.
+func IsTopScore(score int, entries []ScoreEntry) bool {
 	if len(entries) < maxScores {
 		return true
 	}
-	return s > entries[len(entries)-1].Seconds
+	return score > entries[len(entries)-1].Score
 }
 
-// InsertScore inserts a new entry, sorts descending, and trims to top 10.
+// InsertScore inserts a new entry, sorts descending by Score, and trims to top 10.
 func InsertScore(entry ScoreEntry, entries []ScoreEntry) []ScoreEntry {
 	entries = append(entries, entry)
 	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Seconds > entries[j].Seconds
+		return entries[i].Score > entries[j].Score
 	})
 	if len(entries) > maxScores {
 		entries = entries[:maxScores]

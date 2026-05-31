@@ -21,7 +21,7 @@ func TestIsTopScoreUnderMax(t *testing.T) {
 func TestIsTopScoreFullListBeats(t *testing.T) {
 	entries := make([]ScoreEntry, 10)
 	for i := range entries {
-		entries[i] = ScoreEntry{Seconds: 10 - i}
+		entries[i] = ScoreEntry{Score: 10 - i}
 	}
 	// Sorted descending: 10,9,8,...,1. Last = 1. Score of 2 should qualify.
 	if !IsTopScore(2, entries) {
@@ -32,7 +32,7 @@ func TestIsTopScoreFullListBeats(t *testing.T) {
 func TestIsTopScoreFullListLoses(t *testing.T) {
 	entries := make([]ScoreEntry, 10)
 	for i := range entries {
-		entries[i] = ScoreEntry{Seconds: 100 - i}
+		entries[i] = ScoreEntry{Score: 100 - i}
 	}
 	// Last = 91. Score of 90 should not qualify.
 	if IsTopScore(90, entries) {
@@ -53,11 +53,11 @@ func TestInsertScoreAddsEntry(t *testing.T) {
 
 func TestInsertScoreSortDescending(t *testing.T) {
 	entries := []ScoreEntry{
-		{Name: "B", Seconds: 50},
-		{Name: "A", Seconds: 100},
+		{Name: "B", Score: 50},
+		{Name: "A", Score: 100},
 	}
-	result := InsertScore(ScoreEntry{Name: "C", Seconds: 75}, entries)
-	if result[0].Seconds != 100 || result[1].Seconds != 75 || result[2].Seconds != 50 {
+	result := InsertScore(ScoreEntry{Name: "C", Score: 75}, entries)
+	if result[0].Score != 100 || result[1].Score != 75 || result[2].Score != 50 {
 		t.Errorf("sort order wrong: %v", result)
 	}
 }
@@ -65,10 +65,10 @@ func TestInsertScoreSortDescending(t *testing.T) {
 func TestInsertScoreTrimToMax(t *testing.T) {
 	entries := make([]ScoreEntry, 10)
 	for i := range entries {
-		entries[i] = ScoreEntry{Seconds: 10 - i}
+		entries[i] = ScoreEntry{Score: 10 - i}
 	}
 	// Adding a score of 100 should push out the lowest.
-	result := InsertScore(ScoreEntry{Name: "TOP", Seconds: 100}, entries)
+	result := InsertScore(ScoreEntry{Name: "TOP", Score: 100}, entries)
 	if len(result) != 10 {
 		t.Fatalf("expected 10 entries after trim, got %d", len(result))
 	}

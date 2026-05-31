@@ -13,9 +13,10 @@ var emojiFS embed.FS
 
 // Sprites holds pre-scaled 32×32 tile and entity images decoded from embedded Noto Emoji PNGs.
 type Sprites struct {
-	tiles [5]*ebiten.Image // indexed by TileType; nil for TileEmpty
-	Bunny *ebiten.Image
-	Fox   *ebiten.Image
+	tiles  [5]*ebiten.Image // indexed by TileType; nil for TileEmpty
+	Bunny  *ebiten.Image
+	Fox    *ebiten.Image
+	Carrot *ebiten.Image
 }
 
 // NewSprites decodes the embedded emoji PNGs and scales each to TileSize×TileSize.
@@ -41,6 +42,7 @@ func NewSprites() *Sprites {
 	s.tiles[TileFallenLog] = load("log.png")
 	s.Bunny = load("bunny.png")
 	s.Fox = load("fox.png")
+	s.Carrot = load("carrot.png")
 
 	// Return nil if any sprite failed — caller falls back to colored rects.
 	for _, img := range s.tiles {
@@ -50,7 +52,7 @@ func NewSprites() *Sprites {
 	}
 	if s.tiles[TileTree] == nil || s.tiles[TileBush] == nil ||
 		s.tiles[TileBoulder] == nil || s.tiles[TileFallenLog] == nil ||
-		s.Bunny == nil || s.Fox == nil {
+		s.Bunny == nil || s.Fox == nil || s.Carrot == nil {
 		return nil
 	}
 	return s

@@ -18,7 +18,7 @@ const (
 
 // GameOver handles the game-over screen including optional name entry.
 type GameOver struct {
-	Seconds    int
+	Score      int
 	IsTopScore bool
 	Name       [3]rune
 	nameLen    int
@@ -26,8 +26,8 @@ type GameOver struct {
 	face       text.Face
 }
 
-func NewGameOver(seconds int, isTop bool, face text.Face) *GameOver {
-	g := &GameOver{Seconds: seconds, IsTopScore: isTop, face: face}
+func NewGameOver(score int, isTop bool, face text.Face) *GameOver {
+	g := &GameOver{Score: score, IsTopScore: isTop, face: face}
 	if !isTop {
 		g.Phase = GameOverDone
 	}
@@ -83,7 +83,7 @@ func (g *GameOver) Draw(screen *ebiten.Image) {
 	score := &text.DrawOptions{}
 	score.ColorScale.ScaleWithColor(color.White)
 	score.GeoM.Translate(440, 260)
-	text.Draw(screen, fmt.Sprintf("Survived: %d seconds", g.Seconds), g.face, score)
+	text.Draw(screen, fmt.Sprintf("Score: %d pts", g.Score), g.face, score)
 
 	if g.IsTopScore {
 		top := &text.DrawOptions{}

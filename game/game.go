@@ -53,12 +53,18 @@ type Game struct {
 	camera     Camera
 	bunny      *Bunny
 	foxes      []*Fox
+	carrots    []*Carrot
 	difficulty Difficulty
 	startTime  time.Time
 	foxTimer   float64
 
+	carrotTimer      float64
+	carrotInterval   float64
+	carrotsCollected int
+
 	gameOver *screens.GameOver
 	seconds  int
+	score    int
 
 	leaderboard *screens.Leaderboard
 }
@@ -133,9 +139,14 @@ func (g *Game) startGame() {
 	g.camera = Camera{}
 	g.bunny = NewBunny(bunnyStartX, bunnyStartY)
 	g.foxes = nil
+	g.carrots = nil
 	g.difficulty = NewDifficulty()
 	g.startTime = g.clock.Now()
 	g.foxTimer = 0
+	g.carrotTimer = 0
+	g.carrotInterval = 5 + rand.Float64()*6
+	g.carrotsCollected = 0
+	g.score = 0
 	g.state = statePlaying
 	g.spawnFoxAt(g.camera.RightTile(ScreenWidth) - 5)
 }
@@ -178,6 +189,28 @@ func (g *Game) updatePlaying() {
 		g.spawnFox()
 	}
 
+	g.carrotTimer += dt
+	if g.carrotTimer >= g.carrotInterval {
+		g.carrotTimer = 0
+		g.carrotInterval = 5 + rand.Float64()*6
+		g.spawnCarrot()
+	}
+
+	for _, c := range g.carrots {
+		if !c.Collected && c.Pos == g.bunny.Pos {
+			c.Collected = true
+			g.carrotsCollected++
+		}
+	}
+
+	live := g.carrots[:0]
+	for _, c := range g.carrots {
+		if !c.Collected && c.Pos.X >= g.camera.LeftTile() {
+			live = append(live, c)
+		}
+	}
+	g.carrots = live
+
 	if g.bunny.IsCaughtByEdge(&g.camera) {
 		g.triggerGameOver()
 		return
@@ -209,6 +242,20 @@ func (g *Game) spawnFoxAt(spawnCol int) {
 		}
 	}
 	g.foxes = alive
+}
+
+func (g *Game) spawnCarrot() {
+	leftCol := g.camera.LeftTile()
+	rightCol := g.camera.RightTile(ScreenWidth) - 2 // respect right bound
+	midCol := leftCol + (rightCol-leftCol)/3
+	for range 20 {
+		col := midCol + rand.Intn(rightCol-midCol+1)
+		row := rand.Intn(WorldHeight)
+		if CanBunnyEnter(col, row, g.world) {
+			g.carrots = append(g.carrots, &Carrot{Pos: Vec2{col, row}})
+			return
+		}
+	}
 }
 
 // findPatrolRect searches exhaustively for a rectangular patrol path with all four
@@ -267,9 +314,10 @@ func (g *Game) findPatrolRect(spawnCol int) ([4]Vec2, bool) {
 
 func (g *Game) triggerGameOver() {
 	g.seconds = int(g.clock.Now().Sub(g.startTime).Seconds())
+	g.score = g.seconds*10 + g.carrotsCollected*25
 	entries, _ := g.store.Load()
-	isTop := IsTopScore(g.seconds, entries)
-	g.gameOver = screens.NewGameOver(g.seconds, isTop, g.face)
+	isTop := IsTopScore(g.score, entries)
+	g.gameOver = screens.NewGameOver(g.score, isTop, g.face)
 	g.state = stateGameOver
 }
 
@@ -307,6 +355,20 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 		}
 	}
 
+	// Carrots.
+	for _, c := range g.carrots {
+		if c.Collected {
+			continue
+		}
+		csx := g.camera.ScreenX(c.Pos.X)
+		csy := float64(c.Pos.Y * TileSize)
+		if g.sprites != nil {
+			drawSprite(screen, g.sprites.Carrot, csx, csy, 1.0)
+		} else {
+			ebitenutil.DrawRect(screen, csx+4, csy+4, float64(TileSize-8), float64(TileSize-8), color.RGBA{255, 165, 0, 255})
+		}
+	}
+
 	// Bunny — semi-transparent when hidden in a bush.
 	bsx := g.camera.ScreenX(g.bunny.Pos.X)
 	bsy := float64(g.bunny.Pos.Y * TileSize)
@@ -337,10 +399,11 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 
 	// HUD.
 	elapsed := int(g.clock.Now().Sub(g.startTime).Seconds())
+	liveScore := elapsed*10 + g.carrotsCollected*25
 	hud := &text.DrawOptions{}
 	hud.ColorScale.ScaleWithColor(color.White)
 	hud.GeoM.Translate(10, 10)
-	text.Draw(screen, fmt.Sprintf("Time: %ds  Level: %d", elapsed, g.difficulty.Level()), g.face, hud)
+	text.Draw(screen, fmt.Sprintf("Score: %d  Time: %ds  Carrots: %d  Level: %d", liveScore, elapsed, g.carrotsCollected, g.difficulty.Level()), g.face, hud)
 }
 
 // --- Game Over ---
@@ -357,6 +420,8 @@ func (g *Game) updateGameOver() {
 			entry := ScoreEntry{
 				Name:    g.gameOver.GetName(),
 				Seconds: g.seconds,
+				Carrots: g.carrotsCollected,
+				Score:   g.score,
 				Date:    g.clock.Now(),
 			}
 			entries = InsertScore(entry, entries)
@@ -373,7 +438,7 @@ func (g *Game) openLeaderboard() {
 	entries, _ := g.store.Load()
 	rows := make([]screens.LeaderboardRow, len(entries))
 	for i, e := range entries {
-		rows[i] = screens.LeaderboardRow{Name: e.Name, Seconds: e.Seconds}
+		rows[i] = screens.LeaderboardRow{Name: e.Name, Seconds: e.Seconds, Score: e.Score}
 	}
 	g.leaderboard = screens.NewLeaderboard(rows, g.face)
 	g.state = stateLeaderboard
