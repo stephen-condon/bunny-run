@@ -10,7 +10,7 @@ const (
 	visionRadius     = 6   // tiles (Chebyshev), 360°
 	bushWanderMinSec = 3.0
 	bushWanderMaxSec = 5.0
-	lostInterestDist = 1 // tiles — fox "arrives" at last known pos within this dist
+	lostInterestDist = 0 // tiles — fox must reach exact last known pos before giving up
 )
 
 // FoxState represents what the fox is currently doing.
