@@ -40,17 +40,6 @@ func TestFoxPatrolMovesAlongPath(t *testing.T) {
 	}
 }
 
-func TestFoxPeripheralDetection(t *testing.T) {
-	w := newFakeWorld(20, 20)
-	f := newTestFox(5, 5)
-
-	b := NewBunny(6, 5) // 1 tile away — within peripheral radius
-	spotted := f.Update(w, b, nil, 0, foxSpeed)
-	if !spotted {
-		t.Error("fox should spot bunny within peripheral radius (1 tile)")
-	}
-}
-
 func TestFoxDetectsNearbyBunny(t *testing.T) {
 	w := newFakeWorld(20, 20)
 	f := newTestFox(5, 5)
@@ -192,5 +181,22 @@ func TestFoxAlertWakesWanderingFox(t *testing.T) {
 	}
 	if f.lastKnown != (Vec2{7, 7}) {
 		t.Errorf("lastKnown should be {7,7}, got %v", f.lastKnown)
+	}
+}
+
+func TestFoxEntersBushToCatchBunny(t *testing.T) {
+	w := newFakeWorld(20, 20)
+	w.set(6, 5, TileBush)
+	f := newTestFox(5, 5)
+
+	b := NewBunny(6, 5)
+	b.Hidden = false // fox is within 3 tiles, so bunny is not hidden
+
+	// One move step: fox detects bunny (Chebyshev dist 1 ≤ 6, not hidden),
+	// enters Chase with lastKnown={6,5}, then must step onto the bush tile.
+	f.Update(w, b, nil, 1.0/foxSpeed, foxSpeed)
+
+	if !f.CatchesBunny(b) {
+		t.Error("fox should have entered bush and caught bunny")
 	}
 }
