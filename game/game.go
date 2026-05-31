@@ -160,7 +160,7 @@ func (g *Game) updatePlaying() {
 		foxPositions[i] = f.Pos
 	}
 
-	g.bunny.Update(g.input, g.world, foxPositions, dt)
+	g.bunny.Update(g.input, g.world, foxPositions, g.camera.RightTile(ScreenWidth)-1, dt)
 
 	for _, f := range g.foxes {
 		others := make([]*Fox, 0, len(g.foxes)-1)
