@@ -17,9 +17,10 @@ func NewBunny(x, y int) *Bunny {
 }
 
 // Update processes input and moves the bunny. dt is seconds since last frame.
+// rightBound is the exclusive maximum tile column the bunny may occupy.
 // foxPositions is used to determine whether bush concealment holds.
 // Returns true if the bunny moved this frame.
-func (b *Bunny) Update(input InputSource, world WorldReader, foxPositions []Vec2, dt float64) bool {
+func (b *Bunny) Update(input InputSource, world WorldReader, foxPositions []Vec2, rightBound int, dt float64) bool {
 	moved := false
 
 	dx, dy := 0, 0
@@ -43,7 +44,7 @@ func (b *Bunny) Update(input InputSource, world WorldReader, foxPositions []Vec2
 		b.lastDir = newDir
 		b.moveAccum = 0
 		nx, ny := b.Pos.X+dx, b.Pos.Y+dy
-		if CanBunnyEnter(nx, ny, world) {
+		if CanBunnyEnter(nx, ny, world) && nx < rightBound {
 			b.Pos.X = nx
 			b.Pos.Y = ny
 			moved = true
@@ -54,7 +55,7 @@ func (b *Bunny) Update(input InputSource, world WorldReader, foxPositions []Vec2
 		for b.moveAccum >= 1.0 {
 			b.moveAccum -= 1.0
 			nx, ny := b.Pos.X+dx, b.Pos.Y+dy
-			if CanBunnyEnter(nx, ny, world) {
+			if CanBunnyEnter(nx, ny, world) && nx < rightBound {
 				b.Pos.X = nx
 				b.Pos.Y = ny
 				moved = true

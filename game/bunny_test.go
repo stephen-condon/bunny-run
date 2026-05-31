@@ -5,7 +5,7 @@ import "testing"
 // moveN advances the bunny one tile per call, n times.
 func moveN(b *Bunny, input *fakeInput, w *fakeWorld, n int) {
 	for i := 0; i < n; i++ {
-		b.Update(input, w, nil, 1.0/BunnySpeed)
+		b.Update(input, w, nil, 1000, 1.0/BunnySpeed)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestBunnyHiddenInBushNoFox(t *testing.T) {
 	w := newFakeWorld(10, 10)
 	w.set(3, 5, TileBush)
 	b := NewBunny(3, 5)
-	b.Update(&fakeInput{}, w, nil, 0)
+	b.Update(&fakeInput{}, w, nil, 1000, 0)
 	if !b.Hidden {
 		t.Error("bunny should be hidden in bush with no foxes nearby")
 	}
@@ -88,7 +88,7 @@ func TestBunnyHiddenInBushNoFox(t *testing.T) {
 func TestBunnyNotHiddenOutsideBush(t *testing.T) {
 	w := newFakeWorld(10, 10)
 	b := NewBunny(3, 5)
-	b.Update(&fakeInput{}, w, nil, 0)
+	b.Update(&fakeInput{}, w, nil, 1000, 0)
 	if b.Hidden {
 		t.Error("bunny should not be hidden on empty tile")
 	}
@@ -99,7 +99,7 @@ func TestBunnyConcealmentsBreaksWhenFoxClose(t *testing.T) {
 	w.set(3, 5, TileBush)
 	b := NewBunny(3, 5)
 	foxPositions := []Vec2{{4, 5}} // 1 tile away (within 3)
-	b.Update(&fakeInput{}, w, foxPositions, 0)
+	b.Update(&fakeInput{}, w, foxPositions, 1000, 0)
 	if b.Hidden {
 		t.Error("bunny should not be hidden when fox is within 3 tiles")
 	}
@@ -110,7 +110,7 @@ func TestBunnyHiddenWhenFoxFar(t *testing.T) {
 	w.set(3, 5, TileBush)
 	b := NewBunny(3, 5)
 	foxPositions := []Vec2{{10, 10}} // far away (Manhattan dist > 3)
-	b.Update(&fakeInput{}, w, foxPositions, 0)
+	b.Update(&fakeInput{}, w, foxPositions, 1000, 0)
 	if !b.Hidden {
 		t.Error("bunny should be hidden when fox is far away")
 	}
@@ -120,7 +120,7 @@ func TestBunnyHiddenLostOnBushExit(t *testing.T) {
 	w := newFakeWorld(10, 10)
 	w.set(3, 5, TileBush)
 	b := NewBunny(3, 5)
-	b.Update(&fakeInput{}, w, nil, 0)
+	b.Update(&fakeInput{}, w, nil, 1000, 0)
 	if !b.Hidden {
 		t.Fatal("bunny should be hidden in bush")
 	}
@@ -143,5 +143,25 @@ func TestBunnyNotCaughtByEdge(t *testing.T) {
 	cam := &Camera{X: float64(2 * TileSize)}
 	if b.IsCaughtByEdge(cam) {
 		t.Error("bunny at tile 5 should not be caught by camera at tile 2")
+	}
+}
+
+func TestBunnyBlockedByRightBound(t *testing.T) {
+	w := newFakeWorld(20, 10)
+	b := NewBunny(5, 5)
+	// rightBound=6 means bunny cannot enter column 6 or beyond
+	b.Update(&fakeInput{right: true}, w, nil, 6, 1.0/BunnySpeed)
+	if b.Pos.X != 5 {
+		t.Errorf("bunny should be blocked at right bound, got X=%d", b.Pos.X)
+	}
+}
+
+func TestBunnyCanReachRightBoundMinusOne(t *testing.T) {
+	w := newFakeWorld(20, 10)
+	b := NewBunny(4, 5)
+	// rightBound=6 means column 5 is the last allowed column
+	b.Update(&fakeInput{right: true}, w, nil, 6, 1.0/BunnySpeed)
+	if b.Pos.X != 5 {
+		t.Errorf("bunny should move to column 5 (rightBound-1), got X=%d", b.Pos.X)
 	}
 }
